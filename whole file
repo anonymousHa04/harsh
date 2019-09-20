@@ -1,0 +1,199 @@
+<html>
+    <head>
+
+    </head>
+    <body>
+        <canvas id = "gameCanvas" width = "800" height = "600"></canvas>
+        <script>
+            var canvas;
+            var canvasContext;
+            var ballX = 50;
+            var ballY = 50;
+            var ballXSpeed = 10;
+            var ballYSpeed = 10;
+
+            var bat1Y = 250;
+            var bat2Y = 250
+            const bat_height = 100;
+            const bat_thickness = 10;
+
+            var player1Score = 0;
+            var player2Score = 0;
+            const winner = 10;
+
+            var X = alert("best of 10 wins");
+
+            var winScreen = false;
+            //calculate mouse position
+            function calculateMousePos(evt) {
+                var rect = canvas.getBoundingClientRect();
+                var root = document.documentElement;
+                var mouseX = evt.clientX - rect.left - root.scrollLeft;
+                var mouseY = evt.clientY - rect.top - root.scrollTop;
+                return {
+                    x:mouseX,
+                    y:mouseY
+                };
+            }
+
+            function handleMouseClick(evt){
+                if(winScreen){
+                    player1Score = 0;
+                    player2Score = 0;
+                    winScreen = false;
+                }
+            }
+
+            window.onload = function(){
+            canvas = document.getElementById("gameCanvas");
+            canvasContext = canvas.getContext('2d');
+            var framePerSecond = 30;
+            setInterval(callBoth, 1000/framePerSecond)
+
+            canvas.addEventListener('mousedown', handleMouseClick);
+            
+            canvas.addEventListener('mousemove',function(evt){
+                var mousePos = calculateMousePos(evt);
+                bat1Y = mousePos.y - (bat_height/2);
+            });
+           }
+           
+
+
+           //get rid for calling both sunctions
+           function callBoth(){
+              moveEverything();
+               drawEverthing();
+           }
+           //move ball
+
+           function computerMovement(){
+               var center = bat2Y + (bat_height/2);
+               if(ballY - 40 > center){
+                   bat2Y = bat2Y + 8;
+               }else if(ballY - 40 < center){
+                   bat2Y = bat2Y - 8;               
+                }
+           }
+
+           ///move everythuing
+           function moveEverything(){
+
+               if(winScreen == true) { 
+                   return;
+                 }
+               computerMovement();
+
+
+            ballX = ballX + ballXSpeed;
+            ballY = ballY + ballYSpeed;
+            //ballXSpeed = ballXSpeed + 1;
+              // console.log(ballX);
+
+            
+              if(ballX < 0){
+               //ballXSpeed = -ballXSpeed;//bounces back the ball with same speed
+
+
+               //checks if bat hits the ball
+                if(ballY > bat1Y && ballY < bat1Y + bat_height){
+                    ballXSpeed = -ballXSpeed;
+                    var delta = ballY-(bat1Y+bat_height/2);
+                    ballYSpeed = delta * 0.35;
+                }
+                else{
+                    player2Score++;
+                    ballReset();    
+                }
+              }
+
+              if(ballX > canvas.width) {
+                  //ballXSpeed = -ballXSpeed;
+
+                  if(ballY > bat2Y && ballY < bat2Y + bat_height){
+                    ballXSpeed = -ballXSpeed;
+                    var delta = ballY-(bat2Y+bat_height/2);
+                    ballYSpeed = delta * 0.35;
+                }
+                else{
+                    player1Score = player1Score + 1;//score must increase before reset
+                    ballReset();
+                }
+              }
+
+
+              if(ballY > canvas.height || ballY < 0){
+               ballYSpeed = -ballYSpeed;//bounces back the ball with same speed
+              }
+           }
+
+           //draws everything from canvas to bat
+
+           function drawEverthing() {
+            
+            canvasContext.fillStyle = 'black';
+            canvasContext.fillRect(0,0,canvas.width,canvas.height);
+            
+            
+
+                if(winScreen) {
+		canvasContext.fillStyle = 'white';
+
+		if(player1Score >= winner) {
+			canvasContext.fillText("Congrats You won", 350, 200);
+		} else if(player2Score >= winner) {
+			canvasContext.fillText("Sorry AI won", 350, 200);
+		}
+
+		canvasContext.fillText("click to continue", 350, 500);
+		return;
+	}
+
+            
+            
+            //tennis ball
+            canvasContext.fillStyle = 'white';
+            canvasContext.beginPath();
+            canvasContext.arc(ballX, ballY, 10, 0, Math.PI*2, true);
+            canvasContext.fill();
+            
+            //drawnet
+            drawNet();
+           
+            //tennis bat1
+            canvasContext.fillStyle = 'white';
+            canvasContext.fillRect(0,bat1Y,10,100);//bat1Y from mouse position
+
+            //tennis bat2
+            canvasContext.fillStyle = 'white';
+            canvasContext.fillRect(790,bat2Y,10,100);
+
+            //fill Score
+            canvasContext.fillText(player1Score, 100, 100, 25);
+            canvasContext.fillText(player2Score, canvas.width-100, 100, 25);
+           
+           }
+
+        function drawNet(){
+            for(i = 0; i <= canvas.height; i+=40){
+                canvasContext.fillStyle = 'white';
+            canvasContext.fillRect(canvas.width/2, i,6,20);
+            }
+        }
+
+
+
+           //resets the ball at center.  
+           function ballReset(){
+               if(player1Score >= winner || player2Score >= winner){
+                   
+                   winScreen = true;
+               }
+               ballXSpeed = -ballXSpeed;
+               ballY = canvas.height/2;
+               ballX = canvas.width/2;
+           }
+
+        </script>
+    </body>
+</html>
